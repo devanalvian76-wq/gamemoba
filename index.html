@@ -1,0 +1,182 @@
+<!DOCTYPE html><html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAMEMOBA - MLBB Hero Guide Pro</title><meta name="description" content="GAMEMOBA adalah website guide Mobile Legends berisi build hero, tier list, tips gameplay, dan meta terbaru untuk push rank."><style>
+body{
+margin:0;
+font-family:system-ui,Arial;
+background:radial-gradient(circle at top,#0b1220,#050814);
+color:#e5e7eb;
+}
+
+header{
+padding:18px;
+text-align:center;
+font-size:22px;
+font-weight:900;
+letter-spacing:1px;
+background:rgba(17,24,39,0.85);
+backdrop-filter:blur(10px);
+position:sticky;
+top:0;
+box-shadow:0 0 25px rgba(0,255,255,0.15);
+}
+
+.container{
+padding:16px;
+max-width:1100px;
+margin:auto;
+}
+
+.hero-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+gap:12px;
+margin-top:12px;
+}
+
+.hero-card{
+background:linear-gradient(145deg,#111827,#1f2937);
+border:1px solid rgba(255,255,255,0.06);
+padding:12px;
+border-radius:16px;
+cursor:pointer;
+transition:0.25s;
+text-align:center;
+box-shadow:0 10px 30px rgba(0,0,0,0.35);
+}
+
+.hero-card:hover{
+transform:translateY(-6px) scale(1.02);
+box-shadow:0 0 25px rgba(0,255,255,0.25);
+}
+
+.hero-card img{
+width:65px;
+height:65px;
+border-radius:50%;
+border:2px solid cyan;
+margin-bottom:6px;
+}
+
+input,select{
+width:100%;
+padding:12px;
+margin-top:8px;
+border-radius:10px;
+border:none;
+background:#0f172a;
+color:white;
+outline:none;
+}
+
+.detail{
+background:rgba(17,24,39,0.9);
+padding:18px;
+border-radius:16px;
+box-shadow:0 0 30px rgba(0,255,255,0.15);
+}
+
+button{
+padding:12px 16px;
+border:none;
+border-radius:10px;
+background:cyan;
+font-weight:800;
+cursor:pointer;
+margin-top:10px;
+}
+
+.tag{
+display:inline-block;
+padding:4px 8px;
+border-radius:8px;
+background:rgba(0,255,255,0.15);
+margin:4px 4px 0 0;
+font-size:12px;
+}
+</style></head><body><header>🎮 GAMEMOBA - MLBB HERO META & TIER GUIDE</header><div class="container"><input id="search" placeholder="Cari hero MLBB..." oninput="render()"><select id="role" onchange="render()">
+<option value="all">Semua Role</option>
+<option value="Tank">Tank</option>
+<option value="Fighter">Fighter</option>
+<option value="Assassin">Assassin</option>
+<option value="Mage">Mage</option>
+<option value="Marksman">Marksman</option>
+<option value="Support">Support</option>
+</select><div class="hero-grid" id="list"></div></div><div class="container" id="detailPage" style="display:none">
+<div class="detail" id="detail"></div>
+<button onclick="back()">⬅ Kembali</button>
+</div><script>
+
+const heroes=[
+{name:"Alucard",role:"Fighter",tier:"B",build:"War Axe, Endless Battle, Hunter Strike",tips:"Fokus farming early agar bisa snowball di mid game."},
+{name:"Miya",role:"Marksman",tier:"B",build:"Swift Boots, Windtalker, Berserker Fury",tips:"Jaga posisi dan scaling ke late game."},
+{name:"Eudora",role:"Mage",tier:"A",build:"Lightning Truncheon, Holy Crystal, Genius Wand",tips:"Combo burst untuk kill cepat."},
+{name:"Layla",role:"Marksman",tier:"B",build:"Berserker Fury, Malefic Roar, Windtalker",tips:"Positioning sangat penting."},
+{name:"Zilong",role:"Fighter",tier:"A",build:"Windtalker, Blade of Despair, War Axe",tips:"Split push sangat efektif."},
+{name:"Saber",role:"Assassin",tier:"A",build:"Heptaseas, Hunter Strike, Blade of Despair",tips:"Target core musuh dengan ulti."},
+{name:"Franco",role:"Tank",tier:"A",build:"Dominance Ice, Athena Shield, Immortality",tips:"Hook menentukan war."},
+{name:"Chou",role:"Fighter",tier:"S",build:"Hunter Strike, Blade of Despair, War Axe",tips:"Pick off hero core lawan."},
+{name:"Ling",role:"Assassin",tier:"S",build:"Endless Battle, Blade of Despair, Berserker Fury",tips:"Mobilitas tinggi untuk kill cepat."},
+{name:"Gusion",role:"Assassin",tier:"S",build:"Calamity Reaper, Holy Crystal, Genius Wand",tips:"Combo cepat burst damage."},
+{name:"Lancelot",role:"Assassin",tier:"S",build:"Endless Battle, Hunter Strike, Blade of Despair",tips:"Dash untuk dodge skill."},
+{name:"Fanny",role:"Assassin",tier:"S",build:"Bloodlust Axe, Hunter Strike, Blade of Despair",tips:"Butuh mekanik tinggi kabel."},
+{name:"Claude",role:"Marksman",tier:"S",build:"DHS, Golden Staff, Windtalker",tips:"Attack speed tinggi late game."},
+{name:"Granger",role:"Marksman",tier:"A",build:"Hunter Strike, Malefic Roar, Blade of Despair",tips:"Burst damage jarak jauh."},
+{name:"Beatrix",role:"Marksman",tier:"S",build:"Berserker Fury, Malefic Roar, Blade of Despair",tips:"Gunakan semua senjata."},
+{name:"Angela",role:"Support",tier:"A",build:"Enchanted Talisman, Oracle, Fleeting Time",tips:"Support global."},
+{name:"Estes",role:"Support",tier:"A",build:"Oracle, Fleeting Time, Dominance Ice",tips:"Heal team sangat kuat."},
+{name:"Tigreal",role:"Tank",tier:"A",build:"Immortality, Dominance Ice, Athena Shield",tips:"Inisiasi teamfight."},
+{name:"Atlas",role:"Tank",tier:"S",build:"Dominance Ice, Immortality, Oracle",tips:"Combo ultimate sangat kuat."},
+{name:"Johnson",role:"Tank",tier:"A",build:"Cursed Helmet, Immortality, Dominance Ice",tips:"Roaming cepat."},
+{name:"Harley",role:"Mage",tier:"A",build:"Clock of Destiny, Genius Wand, Holy Crystal",tips:"Burst cepat."},
+{name:"Gatotkaca",role:"Tank",tier:"A",build:"Dominance Ice, Athena Shield, Immortality",tips:"Ult untuk engage."},
+{name:"Yu Zhong",role:"Fighter",tier:"S",build:"War Axe, Bloodlust Axe, Dominance Ice",tips:"Sustain tinggi."},
+{name:"Gloo",role:"Tank",tier:"A",build:"Cursed Helmet, Dominance Ice, Immortality",tips:"Ganggu formasi."},
+{name:"Karrie",role:"Marksman",tier:"S",build:"DHS, Golden Staff, Windtalker",tips:"Counter tank."},
+{name:"Harith",role:"Mage",tier:"S",build:"Clock of Destiny, Lightning Truncheon, Holy Crystal",tips:"Spam skill."},
+{name:"Leomord",role:"Fighter",tier:"A",build:"War Axe, Endless Battle, Blade of Despair",tips:"Mode kuda kuat."}
+];
+
+function img(n){return `https://api.dicebear.com/7.x/adventurer/png?seed=${n}`;}
+
+function render(){
+const s=document.getElementById('search').value.toLowerCase();
+const r=document.getElementById('role').value;
+const list=document.getElementById('list');
+list.innerHTML="";
+
+heroes.forEach(h=>{
+if(h.name.toLowerCase().includes(s)&&(r==='all'||h.role===r)){
+list.innerHTML+=`
+<div class='hero-card' onclick="openHero('${h.name}')">
+<img src='${img(h.name)}'>
+<div><b>${h.name}</b><br><small>${h.role} • Tier ${h.tier}</small></div>
+</div>`;
+}
+});
+}
+
+function openHero(name){
+const h=heroes.find(x=>x.name===name);
+document.getElementById('detail').innerHTML=`
+<h2>${h.name}</h2>
+<img src='${img(h.name)}' style='width:90px;border-radius:50%;border:2px solid cyan'>
+<p><span class='tag'>Role: ${h.role}</span><span class='tag'>Tier: ${h.tier}</span></p>
+<p><b>Build:</b> ${h.build}</p>
+<p>${h.tips}</p>
+`;
+document.getElementById('detailPage').style.display='block';
+document.querySelector('.container').style.display='none';
+}
+
+function back(){
+document.getElementById('detailPage').style.display='none';
+document.querySelector('.container').style.display='block';
+}
+
+render();
+
+</script></body>
+</html>
